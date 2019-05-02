@@ -6,7 +6,9 @@ local ssss = {
   _x = 0,
   _y = 0,
   _rot = 0,
-  _scale = {1, 1},
+  _fullscreen_scale = {x = 1, y = 1},
+  _offset = {x = 0, y = 0},
+  _scale = {x = 1, y = 1},
   _fullscreen = false,
   _small_x = 800,
   _small_y = 600
@@ -20,8 +22,12 @@ end
 function ssss:on()
   local w,h = love.graphics.getWidth(), love.graphics.getHeight()
   local cx, cy = w/2, h/2
+  love.graphics.setScissor(self._offset.x, self._offset.y, 
+                            800 * self._fullscreen_scale.x,
+                            600 * self._fullscreen_scale.y)
   love.graphics.push()
   love.graphics.translate(cx, cy)
+  love.graphics.scale(self._fullscreen_scale.x, self._fullscreen_scale.y)
   love.graphics.scale(self._scale.x, self._scale.y)
   love.graphics.rotate(self._rot)
   love.graphics.translate(-self._x, -self._y)
@@ -40,14 +46,28 @@ function ssss:rotate(phi)
   self._rot = self._rot + phi
 end
 
+function ssss:zoom()
+
+end
+
 -- that part that bites push
 function ssss:setFullscreen(isFullscreen)
   love.window.setFullscreen(self._fullscreen, 'desktop')
   
   if self._fullscreen then
-    self._scale.x, self._scale.y = 1.5, 1.5
+    -- scale screen to desktop
+    local ww, wh = love.window.getDesktopDimensions()
+    local sx ,sy = ww/800, wh/600
+    print(sx ..'  ' .. sy)
+    local scale = math.min(sx, sy)
+    self._fullscreen_scale.x, self._fullscreen_scale.y = scale, scale
+
+    -- scissor screen
+    local ox, oy = (sx - scale) * 400, (sy - scale) * 300
+    self._offset.x, self._offset.y = ox, oy
   else
-    self._scale.x, self._scale.y = 1, 1
+    self._fullscreen_scale.x, self._fullscreen_scale.y = 1, 1
+    self._offset.x, self._offset.y = 0, 0
   end
 end
 
