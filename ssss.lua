@@ -10,8 +10,12 @@ local ssss = {
   _offset = {x = 0, y = 0},
   _scale = {x = 1, y = 1},
   _fullscreen = false,
-  _small_x = 800,
-  _small_y = 600
+  _small_w = 800,
+  _small_h = 600,
+  _drawing = false,
+  _color_a = {0, 0, 0, 0},
+  _color_b = {0, 0, 0, 0},
+  _cur_color = {0, 0, 0, 0}
 }
 
 function ssss:init()
@@ -25,12 +29,17 @@ function ssss:on()
   love.graphics.setScissor(self._offset.x, self._offset.y, 
                             800 * self._fullscreen_scale.x,
                             600 * self._fullscreen_scale.y)
+  -- fullscreening
   love.graphics.push()
   love.graphics.translate(cx, cy)
   love.graphics.scale(self._fullscreen_scale.x, self._fullscreen_scale.y)
+  
+  -- transformations
   love.graphics.scale(self._scale.x, self._scale.y)
   love.graphics.rotate(self._rot)
   love.graphics.translate(-self._x, -self._y)
+
+  -- drawing
 end
 
 function ssss:off()
@@ -76,16 +85,11 @@ function ssss:toggleFullscreen()
   self:setFullscreen(self._fullscreen)
 end
 
--- the part that bites shack
-function ssss:shake()
-
-end
-
+-- the part that bites me
 function ssss:update(dt)
 
 end
 
--- the part that bites me
 function ssss:fadeTo(color)
 
 end

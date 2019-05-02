@@ -1,5 +1,4 @@
-local push = require 'push'
-local Camera = require 'camera'
+local shack = require 'shack'
 local ssss = require 'ssss'
 lg = love.graphics
 lk = love.keyboard
@@ -15,17 +14,17 @@ function love.load()
   ssss:init()
 end
 
-function love.update(t)
+function love.update(dt)
   if lk.isDown('left') then cam_pos.x = cam_pos.x - 3 end
   if lk.isDown('right') then cam_pos.x = cam_pos.x + 3 end
 
   ssss:lookAt(cam_pos.x, cam_pos.y)
+  shack:update(dt)
 end
 
 function love.draw()
-  --cam:attach()
-  --push:start()
-  
+  shack:apply()
+
   ssss:on()
   lg.draw(bg)
   lg.setColor(1,0,0)
@@ -33,9 +32,6 @@ function love.draw()
   lg.rectangle('fill',790,590,10,10)
   lg.setColor(1,1,1)
   ssss:off()
-  
-  --push:finish()
-  --cam:detach()
 end
 
 function love.keypressed(k)
@@ -45,5 +41,7 @@ function love.keypressed(k)
     love.event.quit()
   elseif k == 'r' then
     ssss:rotate(0.1)
+  elseif k == 's' then
+    shack:setShake(20)
   end
 end
