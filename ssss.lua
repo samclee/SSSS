@@ -12,6 +12,9 @@ local ssss = {
   _display_w = 800,
   _display_h = 600,
 
+  -- camera
+  _x = 0,
+  _y = 0
 
 }
 
@@ -34,22 +37,30 @@ end
 function ssss:init(gw, gh, dw, dh)
   self._game_w, self._game_h = gw, gh
   self._display_w, self._display_h = dw, dh
+  self._x, self._y = dw / 2, dh / 2
   self:calcValues()
 end
 
-function ssss:on()
-  -- scaling
+function ssss:on(no_cam)
+  -- scaling and centering
   love.graphics.translate(self._offset.x, self._offset.y)
   love.graphics.setScissor(self._offset.x, self._offset.y, self._game_w * self._scale.x, self._game_h * self._scale.y)
   love.graphics.push()
   love.graphics.scale(self._scale.x, self._scale.y)
+
+  -- camera
+  if not no_cam then
+    local cx,cy = self._game_w / 2, self._game_h / 2
+    local dx, dy = cx - self._x, cy - self._y
+    love.graphics.translate(dx, dy)
+  end
 end
 
 function ssss:off()
   love.graphics.pop()
 end
 
--- that part that bites push
+-- the part that bites push
 function ssss:toggleFullscreen()
   self._fullscreen = not self._fullscreen
   local ww, wh = love.window.getDesktopDimensions()
@@ -64,6 +75,17 @@ function ssss:toggleFullscreen()
   self:calcValues()
 
   love.window.setFullscreen(self._fullscreen, 'desktop')
+end
+
+-- the part that bites hump
+function ssss:lookAt(x,y)
+  self._x = x
+  self._y = y
+end
+
+function ssss:moveBy(dx, dy)
+  self._x = self._x + dx
+  self._y = self._y + dy
 end
 
 return ssss
