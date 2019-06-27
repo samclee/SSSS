@@ -3,144 +3,67 @@
 -- SSSS.Gridman
 
 local ssss = {
-  _x = 0,
-  _y = 0,
-  _rot = 0,
-  _fullscreen_scale = {x = 1, y = 1},
+  -- screensize
   _offset = {x = 0, y = 0},
   _scale = {x = 1, y = 1},
   _fullscreen = false,
-  _small_w = 800,
-  _small_h = 600,
-  _drawing = false,
-  _color_a = {0, 0, 0, 0},
-  _color_b = {0, 0, 0, 0},
-  _cur_color = {0, 0, 0, 0},
-  _lerping = false,
-  _lerp_timer = 0,
-  _lerp_speed = 1
+  _game_w = 800,
+  _game_h = 600,
+  _display_w = 800,
+  _display_h = 600,
+
+
 }
 
--- private utility
-local function lerp(a, b, k) --smooth transitions
-  if a == b then
-    return a
-  else
-    if math.abs(a-b) < 0.005 then return b else return a * (1-k) + b * k end
-  end
-end
+-- internal functions
+function ssss:calcValues()
+  -- calculate scaling needed for each dim
+  local sx = self._display_w / self._game_w
+  local sy = self._display_h / self._game_h
+  local min_scale = math.min(sx, sy)
 
-local function deepColorCopy(a)
-  local o = {}
-  for i,v in ipairs(a) do
-    o[i] = v
-  end
+  -- calculate offset needed to center the game screen
+  self._offset.x = (sx - min_scale) * self._game_w / 2
+  self._offset.y = (sy - min_scale) * self._game_h / 2
 
-  return o
+  -- apply scaling
+  self._scale.x, self._scale.y = min_scale, min_scale
 end
 
 -- public api
-function ssss:init()
-  local w,h = love.graphics.getWidth(), love.graphics.getHeight()
-  ssss:lookAt(w/2, h/2)
+function ssss:init(gw, gh, dw, dh)
+  self._game_w, self._game_h = gw, gh
+  self._display_w, self._display_h = dw, dh
+  self:calcValues()
 end
 
 function ssss:on()
-  local w,h = love.graphics.getWidth(), love.graphics.getHeight()
-  local cx, cy = w/2, h/2
-  love.graphics.setScissor(self._offset.x, self._offset.y, 
-                            800 * self._fullscreen_scale.x,
-                            600 * self._fullscreen_scale.y)
-  -- fullscreening
+  -- scaling
+  love.graphics.translate(self._offset.x, self._offset.y)
+  love.graphics.setScissor(self._offset.x, self._offset.y, self._game_w * self._scale.x, self._game_h * self._scale.y)
   love.graphics.push()
-  love.graphics.translate(cx, cy)
-  love.graphics.scale(self._fullscreen_scale.x, self._fullscreen_scale.y)
-  
-  -- transformations
   love.graphics.scale(self._scale.x, self._scale.y)
-  love.graphics.rotate(self._rot)
-  love.graphics.translate(-self._x, -self._y)
 end
 
 function ssss:off()
-  -- drawing
-  if self._drawing then
-    love.graphics.setColor(self._cur_color)
-    love.graphics.rectangle('fill', 0, 0, 800, 600)
-    love.graphics.setColor(1, 1, 1)
-  end
   love.graphics.pop()
 end
 
--- the part that bites hump.camera
-function ssss:lookAt(x, y)
-  self._x, self._y = x, y
-end
-
-function ssss:rotate(phi)
-  self._rot = self._rot + phi
-end
-
-function ssss:zoom()
-
-end
-
 -- that part that bites push
-function ssss:setFullscreen(isFullscreen)
-  love.window.setFullscreen(self._fullscreen, 'desktop')
-  
-  if self._fullscreen then
-    -- scale screen to desktop
-    local ww, wh = love.window.getDesktopDimensions()
-    local sx ,sy = ww/800, wh/600
-    local scale = math.min(sx, sy)
-    self._fullscreen_scale.x, self._fullscreen_scale.y = scale, scale
-
-    -- scissor screen
-    local ox, oy = (sx - scale) * 400, (sy - scale) * 300
-    self._offset.x, self._offset.y = ox, oy
-  else
-    self._fullscreen_scale.x, self._fullscreen_scale.y = 1, 1
-    self._offset.x, self._offset.y = 0, 0
-  end
-end
-
 function ssss:toggleFullscreen()
   self._fullscreen = not self._fullscreen
-  self:setFullscreen(self._fullscreen)
-end
+  local ww, wh = love.window.getDesktopDimensions()
 
--- the part that bites me
-function ssss:update(dt)
-  if self._lerping then
-    self._lerp_timer = math.min(self._lerp_timer + self._lerp_speed * dt, 1)
-    self._lerping = self._lerp_timer < 1
-
-    for i = 1,4 do
-      self._cur_color[i] = lerp(self._color_a[i], self._color_b[i], self._lerp_timer)
-    end
+  if self._fullscreen then -- windowed to fullscreen
+    self._holding_w, self._holding_h = self._display_w, self._display_h
+    self._display_w, self._display_h = ww, wh
+  else -- fullscreen to windowed
+    self._display_w, self._display_h = self._holding_w, self._holding_h
   end
-end
 
-function ssss:fadeTo(color, speed)
-  self._lerp_speed = speed or 1
-  -- set color a to cur color
-  self._color_a = deepColorCopy(self._cur_color)
-  -- set color b to color
-  self._color_b = deepColorCopy(color)
+  self:calcValues()
 
-  -- reinit bools
-  self._lerp_timer = 0
-  self._drawing = true
-  self._lerping = true
-end
-
-function ssss:setColorTo(color)
-  self._cur_color = color
-end
-
-function ssss:setDraw(isDrawing)
-  self._drawing = isDrawing
+  love.window.setFullscreen(self._fullscreen, 'desktop')
 end
 
 return ssss
