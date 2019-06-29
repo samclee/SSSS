@@ -5,7 +5,7 @@ lk = love.keyboard
 
 -- push
 local gameWidth, gameHeight = 960, 540 --fixed game resolution
-local windowWidth, windowHeight = 960, 540 -- window size, must match conf.lua
+local windowWidth, windowHeight = 480, 270 -- window size, must match conf.lua
 
 
 function love.load()

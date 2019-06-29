@@ -37,7 +37,8 @@ end
 function ssss:init(gw, gh, dw, dh)
   self._game_w, self._game_h = gw, gh
   self._display_w, self._display_h = dw, dh
-  self._x, self._y = dw / 2, dh / 2
+  self._x, self._y = gw / 2, gh / 2
+  print(self._x .. ', ' .. self._y)
   self:calcValues()
 end
 
