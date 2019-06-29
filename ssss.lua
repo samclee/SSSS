@@ -60,7 +60,7 @@ function ssss:off()
   love.graphics.pop()
 end
 
--- the part that bites push
+-- Fullscreen functions
 function ssss:toggleFullscreen()
   self._fullscreen = not self._fullscreen
   local ww, wh = love.window.getDesktopDimensions()
@@ -77,7 +77,12 @@ function ssss:toggleFullscreen()
   love.window.setFullscreen(self._fullscreen, 'desktop')
 end
 
--- the part that bites hump
+function ssss:resize(w, h)
+  self._display_w, self._display_h = w, h
+  self:calcValues()
+end
+
+-- Camera functions
 function ssss:lookAt(x,y)
   self._x = x
   self._y = y
